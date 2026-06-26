@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 
 // ⚠️⚠️⚠️ บรรทัดที่ 7: ใส่ LIFF ID ระบบเช็คอินของคุณตรงนี้ ⚠️⚠️⚠️
-const liffId = 'ใส่_LIFF_ID_ระบบเช็คอิน_ของคุณตรงนี้'; 
+const liffId = '2010517750-FOY5M3CN'; 
 
 export default function App() {
   const [users, setUsers] = useState([]);
@@ -37,7 +37,7 @@ export default function App() {
   const [adminRadius, setAdminRadius] = useState('');
 
   // ⚠️⚠️⚠️ บรรทัดที่ 42: ลิงก์ API สำหรับเช็คอิน (เปลี่ยนเป็น URL ของ Apps Script ตัวใหม่) ⚠️⚠️⚠️
-  const sheetApiUrl = 'https://script.google.com/macros/s/AKfycbyUjzZu8D3HHQN0W0zMKYY08T8_fYb8oAwlk9hk2u2FSpPp-6ric1tNSFYu_7Iv2DYz/exec';
+  const sheetApiUrl = 'https://script.google.com/macros/s/AKfycbx0IAOnguzrP_0E2jo2BZS5mGaxPvXu5ptoIllRMOEKIk0xoMM6X_eCq6bzNHeCh5Be/exec';
 
   const showToast = (text, type = 'info') => {
     setToastMsg({ text, type });
