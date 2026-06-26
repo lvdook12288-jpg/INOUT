@@ -1,0 +1,16 @@
+{
+  "name": "hr-check-in-system",
+  "type": "module",
+  "dependencies": {
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
+  },
+  "scripts": {
+    "build": "vite build"
+  }
+}
