@@ -122,16 +122,6 @@ export default function App() {
         setAdminLat(result.data.config.latitude);
         setAdminLng(result.data.config.longitude);
         setAdminRadius(result.data.config.radius);
-
-        if (liffUser) {
-          const matched = result.data.users.find(u => u.lineUserId === liffUser.userId);
-          if (matched && matched.status === 'active') {
-            setCurrentUser(matched);
-            setIsLoggedIn(true);
-            setActiveTab('checkin'); // 🔥 เพิ่มบรรทัดนี้: เพื่อสั่งให้เด้งเข้าหน้าตอกบัตรทันที
-            showToast(`เข้าสู่ระบบอัตโนมัติสำเร็จ: ${matched.name}`, 'success'); // 🔥 เพิ่มบรรทัดนี้: แสดงแจ้งเตือน
-          }
-        }
       }
     } catch (err) {
       showToast('ดึงข้อมูลระบบล้มเหลว', 'error');
@@ -152,6 +142,19 @@ export default function App() {
     }
   }, [myCoords, officeConfig]);
 
+  // 🔥 ระบบแยกออกมารัน Auto-Login ตรวจจับความพร้อมของข้อมูลพนักงานและโปรไฟล์ LINE (เสถียร 100%)
+  useEffect(() => {
+    if (liffUser && users.length > 0 && !isLoggedIn) {
+      // เพิ่ม .trim() เพื่อตัดช่องว่างเว้นวรรคที่อาจหลุดมาใน Google Sheets ออกให้หมดก่อนเทียบรหัส
+      const matched = users.find(u => u.lineUserId.trim() === liffUser.userId.trim());
+      if (matched && matched.status === 'active') {
+        setCurrentUser(matched);
+        setIsLoggedIn(true);
+        setActiveTab('checkin');
+        showToast(`เข้าสู่ระบบอัตโนมัติสำเร็จ: ${matched.name}`, 'success');
+      }
+    }
+  }, [liffUser, users, isLoggedIn]);
   // การดำเนินการเช็คอิน / เช็คเอาท์
   const handleCheckInOut = async (type) => {
     if (!myCoords) return showToast('ไม่พบสัญญาณพิกัด GPS ของคุณในขณะนี้', 'error');
