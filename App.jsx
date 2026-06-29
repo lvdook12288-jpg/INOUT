@@ -128,6 +128,8 @@ export default function App() {
           if (matched && matched.status === 'active') {
             setCurrentUser(matched);
             setIsLoggedIn(true);
+            setActiveTab('checkin'); // 🔥 เพิ่มบรรทัดนี้: เพื่อสั่งให้เด้งเข้าหน้าตอกบัตรทันที
+            showToast(`เข้าสู่ระบบอัตโนมัติสำเร็จ: ${matched.name}`, 'success'); // 🔥 เพิ่มบรรทัดนี้: แสดงแจ้งเตือน
           }
         }
       }
