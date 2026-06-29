@@ -90,12 +90,17 @@ export default function App() {
           if (window.liff.isLoggedIn()) {
             const profile = await window.liff.getProfile();
             setLiffUser(profile);
+          } else {
+            // 🔥 เพิ่มตรงนี้: บังคับล็อกอินถ้ายังไม่ล็อกอิน
+            window.liff.login();
           }
         }
       } catch (err) {
-        console.warn('LIFF failed to init:', err.message);
+        console.error('LIFF Error:', err);
+        showToast(`LIFF Init Error: ${err.message}`, 'error'); // แจ้งเตือน Error ถ้าตั้งค่า LIFF ผิด
       }
     };
+    
     if (!window.liff) {
       const script = document.createElement('script');
       script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
