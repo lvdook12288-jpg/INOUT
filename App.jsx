@@ -269,12 +269,19 @@ export default function App() {
             </button>
           </form>
 
-          {liffUser && (
+          {/* 🔥 ส่วนแก้ไข: แสดงคำแนะนำตามสถานะการโหลด LIFF */}
+          {liffUser ? (
             <div className="mt-6 p-4 bg-slate-50 border rounded-xl text-center">
               <p className="text-xs text-slate-500">LINE User ID ของคุณคือ:</p>
               <code className="block bg-white p-2 mt-1 rounded border text-xs text-blue-700 select-all font-mono">
                 {liffUser.userId}
               </code>
+              <p className="text-[10px] text-slate-400 mt-2">หากระบบยังไม่ล็อกอินอัตโนมัติ โปรดตรวจสอบว่ารหัสนี้ตรงกับในฐานข้อมูล (ไม่มีเว้นวรรคเกิน)</p>
+            </div>
+          ) : (
+            <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
+              <p className="text-xs text-amber-600 font-medium">⚠️ ไม่พบการเชื่อมต่อกับแอป LINE</p>
+              <p className="text-[10px] text-amber-500 mt-1">ระบบล็อกอินอัตโนมัติจะทำงานเมื่อคุณเปิดลิงก์นี้ผ่านปุ่มในแอป LINE เท่านั้น (ห้ามเปิดด้วยลิงก์ Vercel โดยตรง)</p>
             </div>
           )}
         </div>
