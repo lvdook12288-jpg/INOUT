@@ -11,7 +11,7 @@ export default function App() {
   const [officeConfig, setOfficeConfig] = useState({ latitude: 13.7563, longitude: 100.5018, radius: 100 });
   const [allLogs, setAllLogs] = useState([]);
   
-  // สถานะผู้ใช้และตำแหน่ง
+  // Status
   const [isAppLoading, setIsAppLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginUserId, setLoginUserId] = useState('');
@@ -21,22 +21,22 @@ export default function App() {
   const [distance, setDistance] = useState(null);
   const [geoError, setGeoError] = useState('');
   
-  // การทำงานของเมนูและ UI
+  // UI Tabs
   const [activeTab, setActiveTab] = useState('checkin'); // checkin, history, report, settings
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMsg, setToastMsg] = useState({ text: '', type: 'info' });
 
-  // ฟิลเตอร์หน้ารายงานสำหรับ Admin
+  // Filters
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterDept, setFilterDept] = useState('all');
   const [filterUser, setFilterUser] = useState('all');
 
-  // ค่าสำหรับการอัปเดตพิกัดออฟฟิศ
+  // Config Inputs
   const [adminLat, setAdminLat] = useState('');
   const [adminLng, setAdminLng] = useState('');
   const [adminRadius, setAdminRadius] = useState('');
 
-  // ⚠️⚠️⚠️ บรรทัดที่ 42: ลิงก์ API สำหรับเช็คอิน (เปลี่ยนเป็น URL ของ Apps Script ตัวใหม่) ⚠️⚠️⚠️
+  // ⚠️⚠️⚠️ บรรทัดที่ 42: ลิงก์ API สำหรับเช็คอิน ⚠️⚠️⚠️
   const sheetApiUrl = 'https://script.google.com/macros/s/AKfycbx0IAOnguzrP_0E2jo2BZS5mGaxPvXu5ptoIllRMOEKIk0xoMM6X_eCq6bzNHeCh5Be/exec';
 
   const showToast = (text, type = 'info') => {
@@ -44,7 +44,6 @@ export default function App() {
     setTimeout(() => setToastMsg({ text: '', type: 'info' }), 3000);
   };
 
-  // คำนวณระยะห่างทางภูมิศาสตร์
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371000; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -56,7 +55,6 @@ export default function App() {
     return Math.round(R * c); 
   };
 
-  // ดึงตำแหน่งพิกัด GPS อุปกรณ์ในปัจจุบัน
   const getDeviceLocation = () => {
     if (!navigator.geolocation) {
       setGeoError('อุปกรณ์ไม่รองรับระบบระบุพิกัด GPS');
@@ -84,7 +82,6 @@ export default function App() {
     );
   };
 
-  // เริ่มใช้งานระบบ LINE LIFF
   useEffect(() => {
     const initLiff = async () => {
       try {
@@ -109,7 +106,6 @@ export default function App() {
     }
   }, []);
 
-  // ดึงข้อมูลทั้งหมดจากระบบหลังบ้าน
   const fetchData = async () => {
     try {
       const res = await fetch(sheetApiUrl);
@@ -142,11 +138,13 @@ export default function App() {
     }
   }, [myCoords, officeConfig]);
 
-  // 🔥 ระบบแยกออกมารัน Auto-Login ตรวจจับความพร้อมของข้อมูลพนักงานและโปรไฟล์ LINE (เสถียร 100%)
+  // ระบบตรวจจับเพื่อล็อกอินอัตโนมัติ (ข้ามหน้า Login ไปหน้าเช็คอิน)
   useEffect(() => {
     if (liffUser && users.length > 0 && !isLoggedIn) {
-      // เพิ่ม .trim() เพื่อตัดช่องว่างเว้นวรรคที่อาจหลุดมาใน Google Sheets ออกให้หมดก่อนเทียบรหัส
-      const matched = users.find(u => u.lineUserId.trim() === liffUser.userId.trim());
+      const matched = users.find(u => {
+        const sheetId = u.lineUserId || '';
+        return sheetId.trim() === liffUser.userId.trim();
+      });
       if (matched && matched.status === 'active') {
         setCurrentUser(matched);
         setIsLoggedIn(true);
@@ -155,7 +153,7 @@ export default function App() {
       }
     }
   }, [liffUser, users, isLoggedIn]);
-  // การดำเนินการเช็คอิน / เช็คเอาท์
+
   const handleCheckInOut = async (type) => {
     if (!myCoords) return showToast('ไม่พบสัญญาณพิกัด GPS ของคุณในขณะนี้', 'error');
     if (distance > officeConfig.radius) return showToast('คุณอยู่นอกพื้นที่เช็คอินที่กำหนด', 'error');
@@ -195,7 +193,6 @@ export default function App() {
     }
   };
 
-  // แอดมินเซฟการตั้งค่าพิกัดออฟฟิศ
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -307,6 +304,9 @@ export default function App() {
   const departments = [...new Set(users.map(u => u.dept).filter(Boolean))];
   const usersInSelectedDept = filterDept === 'all' ? users : users.filter(u => u.dept === filterDept);
 
+  // ตรวจเช็คว่าคนล็อกอินมีสิทธิ์เป็น แอดมิน หรือ หัวหน้า หรือไม่
+  const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'หัวหน้า';
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 font-sans">
       {toastMsg.text && (
@@ -323,13 +323,13 @@ export default function App() {
         </div>
         <div className="text-right">
           <p className="text-xs text-slate-300 font-medium">{currentUser.name}</p>
-          <p className="text-[10px] text-blue-400">{currentUser.dept} | {currentUser.role === 'admin' ? 'แอดมิน' : 'พนักงาน'}</p>
+          <p className="text-[10px] text-blue-400">{currentUser.dept} | {currentUser.role}</p>
         </div>
       </nav>
 
       <div className="max-w-md mx-auto p-4 space-y-6">
 
-        {/* 1. แท็บตอกบัตรเช็คอิน */}
+        {/* 1. แท็บลงเวลาเช็คอิน */}
         {activeTab === 'checkin' && (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl shadow-md border border-slate-100 text-center space-y-4">
@@ -402,7 +402,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. แท็บประวัติของตัวเอง */}
+        {/* 2. แท็บประวัติ */}
         {activeTab === 'history' && (
           <div className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4">
             <h3 className="font-bold text-lg text-slate-800">ประวัติเวลาเข้างานของฉัน</h3>
@@ -428,8 +428,8 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. แท็บรายงานประจำวัน (แอดมิน) */}
-        {activeTab === 'report' && currentUser.role === 'admin' && (
+        {/* 3. แท็บรายงานประจำวัน */}
+        {activeTab === 'report' && (
           <div className="space-y-5">
             <div className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4">
               <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
@@ -523,8 +523,8 @@ export default function App() {
           </div>
         )}
 
-        {/* 4. แท็บปรับแต่งพิกัด GPS ออฟฟิศ (แอดมิน) */}
-        {activeTab === 'settings' && currentUser.role === 'admin' && (
+        {/* 4. แท็บปรับแต่งพิกัด GPS ออฟฟิศ */}
+        {activeTab === 'settings' && (
           <div className="bg-white p-5 rounded-2xl shadow-md border border-slate-100 space-y-4">
             <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
               <Settings className="w-5 h-5 text-slate-600" /> ปรับตั้งพิกัดบริษัท
@@ -598,7 +598,7 @@ export default function App() {
         <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 text-xs font-medium ${activeTab === 'history' ? 'text-blue-600' : 'text-slate-400'}`}>
           <List className="w-5 h-5" /> ประวัติฉัน
         </button>
-        {currentUser.role === 'admin' && (
+        {isAdminOrManager && (
           <>
             <button onClick={() => setActiveTab('report')} className={`flex flex-col items-center gap-1 text-xs font-medium ${activeTab === 'report' ? 'text-blue-600' : 'text-slate-400'}`}>
               <FileText className="w-5 h-5" /> รายงานเวลา
